@@ -362,9 +362,13 @@
         localStorage.setItem("events", JSON.stringify(events));
       }, [events]);
 
-      // Request notification permission and check events periodically
+      // Check for Notification support and request permission
       useEffect(() => {
-        if ("Notification" in window && Notification.permission !== "granted") {
+        if (!("Notification" in window)) {
+          console.warn("This browser does not support notifications.");
+          return;
+        }
+        if (Notification.permission !== "granted") {
           Notification.requestPermission();
         }
         const interval = setInterval(() => {
@@ -375,10 +379,13 @@
               event.time - now < 5 * 60 * 1000 &&
               event.time - now > -60 * 1000
             ) {
-              new Notification("Upcoming Event: " + event.title, {
-                body: "At: " + new Date(event.time).toLocaleString() + "\n" + event.details,
-                icon: "https://via.placeholder.com/100x100.png?text=Event"
-              });
+              // Only trigger notification if permission is granted
+              if (Notification.permission === "granted") {
+                new Notification("Upcoming Event: " + event.title, {
+                  body: "At: " + new Date(event.time).toLocaleString() + "\n" + event.details,
+                  icon: "https://via.placeholder.com/100x100.png?text=Event"
+                });
+              }
             }
           });
         }, 30000);
