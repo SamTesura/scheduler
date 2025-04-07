@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Organizer App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* Global Styles */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f8fb;
+      color: #333;
+    }
+    header {
+      position: relative;
+      z-index: 1;
+      padding: 1rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      /* Animated gradient background for header */
+      background: linear-gradient(-45deg, #336699, #285580, #3a8bbd, #336699);
+      background-size: 400% 400%;
+      animation: gradientAnimation 15s ease infinite;
+      color: #fff;
+    }
+    h1 {
+      margin: 0.2rem 0;
+      font-size: 2.5rem;
+      animation: slideIn 1s ease;
+    }
+    p {
+      margin-top: 0.5rem;
+      font-size: 1.1rem;
+    }
+    @keyframes gradientAnimation {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes slideIn {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .nav-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    .nav-tabs button {
+      padding: 0.5rem 1rem;
+      border: none;
+      background: #336699;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.1s ease;
+    }
+    .nav-tabs button.active,
+    .nav-tabs button:hover {
+      background: #285580;
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+    .container {
+      padding: 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .section {
+      margin-bottom: 2rem;
+    }
+    /* Form Styles */
+    .form-container {
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1.5rem;
+    }
+    .form-container input[type="datetime-local"],
+    .form-container input[type="text"],
+    .form-container textarea {
+      width: 100%;
+      padding: 0.75rem;
+      box-sizing: border-box;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+    .form-container input[type="datetime-local"]:focus,
+    .form-container input[type="text"]:focus,
+    .form-container textarea:focus {
+      border-color: #336699;
+      outline: none;
+    }
+    .form-container input[type="checkbox"] {
+      margin-right: 0.5rem;
+      transform: scale(1.2);
+    }
+    .form-container label {
+      display: flex;
+      align-items: center;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    .form-container button {
+      width: 100%;
+      padding: 0.75rem;
+      border: none;
+      background: #336699;
+      color: #fff;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.1s ease;
+    }
+    .form-container button:hover {
+      background: #285580;
+    }
+    /* Table Styles */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    table th,
+    table td {
+      padding: 1rem;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+    table th {
+      background: #f0f6fa;
+      color: #336699;
+    }
+    table tr:nth-child(even) {
+      background: #fafafa;
+    }
+    table tbody tr {
+      animation: fadeIn 0.5s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .action-buttons button {
+      margin-right: 0.5rem;
+      padding: 0.4rem 0.8rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.3s ease, transform 0.1s ease;
+    }
+    .edit-btn {
+      background: #ffa500;
+      color: #fff;
+    }
+    .delete-btn {
+      background: #e74c3c;
+      color: #fff;
+    }
+    /* Calendar Styles */
+    .calendar-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+    }
+    .month {
+      background: #fff;
+      padding: 0.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      width: calc(33% - 1rem);
+      min-width: 250px;
+      margin-bottom: 1rem;
+    }
+    .month h3 {
+      text-align: center;
+      color: #336699;
+      margin-bottom: 0.5rem;
+    }
+    .days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.2rem;
+    }
+    .day {
+      padding: 0.5rem;
+      text-align: center;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .day:hover {
+      background: #f1f7fc;
+    }
+    .day.has-event {
+      background: #d8eafc;
+      border: 1px solid #336699;
+    }
+    .empty {
+      background: transparent;
+      cursor: default;
+    }
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.5s ease;
+    }
+    .modal {
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 8px;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      animation: slideUp 0.5s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .modal .close {
+      float: right;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: #aaa;
+    }
+    .modal h3 {
+      margin-top: 0;
+      color: #336699;
+    }
+    .modal input[type="datetime-local"],
+    .modal input[type="text"],
+    .modal textarea {
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+    .modal input[type="datetime-local"]:focus,
+    .modal input[type="text"]:focus,
+    .modal textarea:focus {
+      border-color: #336699;
+      outline: none;
+    }
+    .modal input[type="checkbox"] {
+      margin-right: 0.5rem;
+      transform: scale(1.2);
+    }
+    .modal label {
+      display: flex;
+      align-items: center;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    .modal button {
+      width: 100%;
+      padding: 0.75rem;
+      border: none;
+      background: #336699;
+      color: #fff;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.1s ease;
+    }
+    .modal button:hover {
+      background: #285580;
+    }
+    /* Responsive */
+    @media (max-width: 600px) {
+      .month {
+        width: calc(50% - 1rem);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <!-- Include React and Babel from CDN -->
+  <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    function App() {
+      const [activeTab, setActiveTab] = useState("organizer");
+      const [events, setEvents] = useState(() => {
+        const stored = localStorage.getItem("events");
+        return stored ? JSON.parse(stored) : [];
+      });
+      const [formData, setFormData] = useState({ time: "", title: "", details: "", notify: false });
+      
+      // For modal editing and calendar adding events
+      const [modalOpen, setModalOpen] = useState(false);
+      const [modalMode, setModalMode] = useState("add"); // "add" or "edit"
+      const [modalData, setModalData] = useState({ time: "", title: "", details: "", notify: false });
+      const [modalEventIndex, setModalEventIndex] = useState(null);
+      const [modalTitle, setModalTitle] = useState("");
+
+      // Persist events
+      useEffect(() => {
+        localStorage.setItem("events", JSON.stringify(events));
+      }, [events]);
+
+      // Request notification permission and check events periodically
+      useEffect(() => {
+        if ("Notification" in window && Notification.permission !== "granted") {
+          Notification.requestPermission();
+        }
+        const interval = setInterval(() => {
+          const now = Date.now();
+          events.forEach(event => {
+            if (
+              event.notify &&
+              event.time - now < 5 * 60 * 1000 &&
+              event.time - now > -60 * 1000
+            ) {
+              new Notification("Upcoming Event: " + event.title, {
+                body: "At: " + new Date(event.time).toLocaleString() + "\n" + event.details,
+                icon: "https://via.placeholder.com/100x100.png?text=Event"
+              });
+            }
+          });
+        }, 30000);
+        return () => clearInterval(interval);
+      }, [events]);
+
+      // Organizer functions
+      const addEvent = () => {
+        if (!formData.time || !formData.title) {
+          alert("Please provide a date/time and title");
+          return;
+        }
+        const newEvent = { ...formData, time: new Date(formData.time).getTime() };
+        setEvents([...events, newEvent]);
+        setFormData({ time: "", title: "", details: "", notify: false });
+      };
+
+      const deleteEvent = (index) => {
+        const newEvents = [...events];
+        newEvents.splice(index, 1);
+        setEvents(newEvents);
+      };
+
+      const openEditModal = (index) => {
+        const event = events[index];
+        setModalMode("edit");
+        setModalData({
+          time: new Date(event.time).toISOString().slice(0, 16),
+          title: event.title,
+          details: event.details,
+          notify: event.notify
+        });
+        setModalTitle("Edit Event");
+        setModalEventIndex(index);
+        setModalOpen(true);
+      };
+
+      // Calendar functions
+      const currentYear = new Date().getFullYear();
+      const months = Array.from({ length: 12 }, (_, i) => i);
+
+      const openAddModalForDate = (year, month, day) => {
+        const selected = new Date(year, month, day);
+        setModalMode("add");
+        setModalData({ time: selected.toISOString().slice(0, 10) + "T00:00", title: "", details: "", notify: false });
+        setModalTitle("Add Event for " + selected.toLocaleDateString());
+        setModalOpen(true);
+      };
+
+      const handleModalSave = () => {
+        if (!modalData.time || !modalData.title) {
+          alert("Please provide a date/time and title");
+          return;
+        }
+        if (modalMode === "add") {
+          const newEvent = { ...modalData, time: new Date(modalData.time).getTime() };
+          setEvents([...events, newEvent]);
+        } else if (modalMode === "edit") {
+          const updatedEvent = { ...modalData, time: new Date(modalData.time).getTime() };
+          const newEvents = [...events];
+          newEvents[modalEventIndex] = updatedEvent;
+          setEvents(newEvents);
+        }
+        setModalOpen(false);
+      };
+
+      // Render full-year calendar
+      const renderCalendar = () => {
+        return months.map(month => {
+          const firstDay = new Date(currentYear, month, 1).getDay();
+          const daysInMonth = new Date(currentYear, month + 1, 0).getDate();
+          const monthName = new Date(currentYear, month).toLocaleString("default", { month: "long" });
+          const daysArr = [];
+          for (let i = 0; i < firstDay; i++) {
+            daysArr.push(null);
+          }
+          for (let day = 1; day <= daysInMonth; day++) {
+            daysArr.push(day);
+          }
+          return (
+            <div key={month} className="month">
+              <h3>{monthName}</h3>
+              <div className="days">
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d, i) => (
+                  <div key={i} className="day" style={{ fontWeight: "bold" }}>
+                    {d}
+                  </div>
+                ))}
+                {daysArr.map((day, idx) => {
+                  if (day === null) return <div key={idx} className="day empty"></div>;
+                  const hasEvent = events.some(e => {
+                    const d = new Date(e.time);
+                    return d.getFullYear() === currentYear && d.getMonth() === month && d.getDate() === day;
+                  });
+                  return (
+                    <div
+                      key={idx}
+                      className={"day" + (hasEvent ? " has-event" : "")}
+                      onClick={() => openAddModalForDate(currentYear, month, day)}
+                    >
+                      {day}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        });
+      };
+
+      return (
+        <div>
+          <header>
+            <h1>Brainstorm & Schedule Organizer</h1>
+            <p>Your ideas and events at a glance!</p>
+            <div className="nav-tabs">
+              <button className={activeTab === "organizer" ? "active" : ""} onClick={() => setActiveTab("organizer")}>
+                Organizer
+              </button>
+              <button className={activeTab === "calendar" ? "active" : ""} onClick={() => setActiveTab("calendar")}>
+                Calendar
+              </button>
+            </div>
+          </header>
+          <div className="container">
+            {activeTab === "organizer" && (
+              <div className="section">
+                <div className="form-container">
+                  <input
+                    type="datetime-local"
+                    value={formData.time}
+                    onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                    placeholder="Select date and time"
+                  />
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="Event Title"
+                  />
+                  <textarea
+                    value={formData.details}
+                    onChange={(e) => setFormData({ ...formData, details: e.target.value })}
+                    rows="3"
+                    placeholder="Describe your idea or activity in detail"
+                  ></textarea>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={formData.notify}
+                      onChange={(e) => setFormData({ ...formData, notify: e.target.checked })}
+                    />
+                    Notify me for this event
+                  </label>
+                  <button onClick={addEvent}>Add Event</button>
+                </div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date & Time</th>
+                      <th>Title</th>
+                      <th>Details</th>
+                      <th>Notify</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {events.map((event, idx) => (
+                      <tr key={idx}>
+                        <td>{new Date(event.time).toLocaleString()}</td>
+                        <td>{event.title}</td>
+                        <td>{event.details}</td>
+                        <td>{event.notify ? "Yes" : "No"}</td>
+                        <td className="action-buttons">
+                          <button className="edit-btn" onClick={() => openEditModal(idx)}>Edit</button>
+                          <button className="delete-btn" onClick={() => deleteEvent(idx)}>Delete</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {activeTab === "calendar" && (
+              <div className="section">
+                <h2 style={{ textAlign: "center", marginBottom: "1rem", color: "#336699" }}>
+                  Full Year Calendar - {currentYear}
+                </h2>
+                <div className="calendar-grid">{renderCalendar()}</div>
+              </div>
+            )}
+          </div>
+          {modalOpen && (
+            <div className="modal-overlay" onClick={() => setModalOpen(false)}>
+              <div className="modal" onClick={(e) => e.stopPropagation()}>
+                <span className="close" onClick={() => setModalOpen(false)}>
+                  &times;
+                </span>
+                <h3>{modalTitle}</h3>
+                <input
+                  type="datetime-local"
+                  value={modalData.time}
+                  onChange={(e) => setModalData({ ...modalData, time: e.target.value })}
+                />
+                <input
+                  type="text"
+                  value={modalData.title}
+                  onChange={(e) => setModalData({ ...modalData, title: e.target.value })}
+                  placeholder="Event Title"
+                />
+                <textarea
+                  value={modalData.details}
+                  onChange={(e) => setModalData({ ...modalData, details: e.target.value })}
+                  rows="3"
+                  placeholder="Event Details"
+                ></textarea>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={modalData.notify}
+                    onChange={(e) => setModalData({ ...modalData, notify: e.target.checked })}
+                  />
+                  Notify me for this event
+                </label>
+                <button onClick={handleModalSave}>Save Event</button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById("root"));
+  </script>
+</body>
+</html>
