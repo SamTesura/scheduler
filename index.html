@@ -319,13 +319,16 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
+    // Helper to generate a unique ID
+    const generateUniqueId = () => Date.now() + '-' + Math.random();
+
     function App() {
-      const [activeTab, setActiveTab] = useState("organizer");
+      // Initialize events from localStorage if available.
       const [events, setEvents] = useState(() => {
         const stored = localStorage.getItem("events");
         return stored ? JSON.parse(stored) : [];
       });
-      const [nextId, setNextId] = useState(0);
+      const [activeTab, setActiveTab] = useState("organizer");
       const [formData, setFormData] = useState({ time: "", title: "", details: "", notify: false });
       const [modalOpen, setModalOpen] = useState(false);
       const [modalMode, setModalMode] = useState("add");
@@ -337,23 +340,7 @@
       const [eventToDelete, setEventToDelete] = useState(null);
       const calendarRef = useRef(null);
 
-      // On mount, if stored events lack an id, assign one and set nextId appropriately.
-      useEffect(() => {
-        let maxId = 0;
-        const updatedEvents = events.map(event => {
-          if (event.id === undefined) {
-            event.id = maxId++;
-          } else {
-            maxId = Math.max(maxId, event.id + 1);
-          }
-          return event;
-        });
-        setEvents(updatedEvents);
-        setNextId(maxId);
-        localStorage.setItem("events", JSON.stringify(updatedEvents));
-      }, []);
-
-      // Persist events to localStorage whenever they change.
+      // Persist events into localStorage whenever they change.
       useEffect(() => {
         localStorage.setItem("events", JSON.stringify(events));
       }, [events]);
@@ -374,7 +361,7 @@
               const offsets = [30, 20, 10, 0]; // minutes before event
               offsets.forEach(offset => {
                 const notificationTime = event.time - offset * 60 * 1000;
-                if (now >= notificationTime && now < notificationTime + 30 * 1000) {
+                if (now >= notificationTime && now < notificationTime + 30000) {
                   if (Notification.permission === "granted") {
                     new Notification(`Event Reminder: ${event.title}`, {
                       body: `At: ${new Date(event.time).toLocaleString()}\n${event.details}`,
@@ -389,7 +376,7 @@
         return () => clearInterval(interval);
       }, [events]);
 
-      // Scroll to current month when Calendar tab is selected.
+      // Scroll to the current month in Calendar mode.
       useEffect(() => {
         if (activeTab === "calendar" && calendarRef.current) {
           calendarRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -397,15 +384,17 @@
       }, [activeTab]);
 
       // Organizer functions
-
       const addEvent = () => {
         if (!formData.time || !formData.title) {
           alert("Please provide a date/time and title");
           return;
         }
-        const newEvent = { id: nextId, ...formData, time: new Date(formData.time).getTime() };
-        setEvents(prevEvents => [...prevEvents, newEvent]);
-        setNextId(prevId => prevId + 1);
+        const newEvent = {
+          id: Date.now(), // Generate a unique ID using Date.now()
+          ...formData,
+          time: new Date(formData.time).getTime()
+        };
+        setEvents(prev => [...prev, newEvent]);
         setFormData({ time: "", title: "", details: "", notify: false });
       };
 
@@ -414,9 +403,9 @@
         setConfirmModalOpen(true);
       };
 
-      // Using functional update for deletion so only the selected event is removed.
+      // Delete only the event with the matching id.
       const confirmDelete = () => {
-        setEvents(prevEvents => prevEvents.filter(e => e.id !== eventToDelete));
+        setEvents(prev => prev.filter(e => e.id !== eventToDelete));
         setConfirmModalOpen(false);
         setEventToDelete(null);
       };
@@ -456,20 +445,16 @@
       const getEventsForDate = (year, month, day) => {
         return events.filter(event => {
           const d = new Date(event.time);
-          return (
-            d.getFullYear() === year &&
-            d.getMonth() === month &&
-            d.getDate() === day
-          );
+          return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day;
         }).sort((a, b) => a.time - b.time);
       };
 
       const openAddEventForDate = () => {
         if (!selectedDate) return;
         const selected = new Date(selectedDate.year, selectedDate.month, selectedDate.day);
+        // Do not set an id here; let handleModalSave generate it
         setModalMode("add");
         setModalData({
-          id: null,
           time: selected.toISOString().slice(0, 10) + "T00:00",
           title: "",
           details: "",
@@ -485,13 +470,20 @@
           alert("Please provide a date/time and title");
           return;
         }
+        
         if (modalMode === "add") {
-          const newEvent = { id: nextId, ...modalData, time: new Date(modalData.time).getTime() };
-          setEvents(prevEvents => [...prevEvents, newEvent]);
-          setNextId(prevId => prevId + 1);
+          const newEvent = {
+            ...modalData,
+            id: generateUniqueId(),
+            time: new Date(modalData.time).getTime()
+          };
+          setEvents(prev => [...prev, newEvent]);
         } else if (modalMode === "edit") {
-          const updatedEvent = { ...modalData, time: new Date(modalData.time).getTime() };
-          setEvents(prevEvents => prevEvents.map(e => e.id === modalData.id ? updatedEvent : e));
+          const updatedEvent = {
+            ...modalData,
+            time: new Date(modalData.time).getTime()
+          };
+          setEvents(prev => prev.map(e => e.id === modalData.id ? updatedEvent : e));
         }
         setModalOpen(false);
       };
