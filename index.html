@@ -337,7 +337,7 @@
       const [eventToDelete, setEventToDelete] = useState(null);
       const calendarRef = useRef(null);
 
-      // Assign IDs to existing events and set nextId
+      // On mount, if stored events lack an id, assign one and set nextId appropriately.
       useEffect(() => {
         let maxId = 0;
         const updatedEvents = events.map(event => {
@@ -353,12 +353,12 @@
         localStorage.setItem("events", JSON.stringify(updatedEvents));
       }, []);
 
-      // Persist events
+      // Persist events to localStorage whenever they change.
       useEffect(() => {
         localStorage.setItem("events", JSON.stringify(events));
       }, [events]);
 
-      // Notification logic
+      // Notification logic remains unchanged.
       useEffect(() => {
         if (!("Notification" in window)) {
           console.warn("This browser does not support notifications.");
@@ -389,7 +389,7 @@
         return () => clearInterval(interval);
       }, [events]);
 
-      // Scroll to current month when calendar tab is selected
+      // Scroll to current month when Calendar tab is selected.
       useEffect(() => {
         if (activeTab === "calendar" && calendarRef.current) {
           calendarRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -397,14 +397,15 @@
       }, [activeTab]);
 
       // Organizer functions
+
       const addEvent = () => {
         if (!formData.time || !formData.title) {
           alert("Please provide a date/time and title");
           return;
         }
         const newEvent = { id: nextId, ...formData, time: new Date(formData.time).getTime() };
-        setEvents([...events, newEvent]);
-        setNextId(nextId + 1);
+        setEvents(prevEvents => [...prevEvents, newEvent]);
+        setNextId(prevId => prevId + 1);
         setFormData({ time: "", title: "", details: "", notify: false });
       };
 
@@ -413,8 +414,9 @@
         setConfirmModalOpen(true);
       };
 
+      // Using functional update for deletion so only the selected event is removed.
       const confirmDelete = () => {
-        setEvents(events.filter(e => e.id !== eventToDelete));
+        setEvents(prevEvents => prevEvents.filter(e => e.id !== eventToDelete));
         setConfirmModalOpen(false);
         setEventToDelete(null);
       };
@@ -475,7 +477,7 @@
         });
         setModalTitle("Add Event for " + selected.toLocaleDateString());
         setModalOpen(true);
-        setDayViewOpen(false); // This line closes the day view modal
+        setDayViewOpen(false);
       };
 
       const handleModalSave = () => {
@@ -485,11 +487,11 @@
         }
         if (modalMode === "add") {
           const newEvent = { id: nextId, ...modalData, time: new Date(modalData.time).getTime() };
-          setEvents([...events, newEvent]);
-          setNextId(nextId + 1);
+          setEvents(prevEvents => [...prevEvents, newEvent]);
+          setNextId(prevId => prevId + 1);
         } else if (modalMode === "edit") {
           const updatedEvent = { ...modalData, time: new Date(modalData.time).getTime() };
-          setEvents(events.map(e => e.id === modalData.id ? updatedEvent : e));
+          setEvents(prevEvents => prevEvents.map(e => e.id === modalData.id ? updatedEvent : e));
         }
         setModalOpen(false);
       };
