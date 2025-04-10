@@ -475,6 +475,7 @@
         });
         setModalTitle("Add Event for " + selected.toLocaleDateString());
         setModalOpen(true);
+        setDayViewOpen(false); // This line closes the day view modal
       };
 
       const handleModalSave = () => {
